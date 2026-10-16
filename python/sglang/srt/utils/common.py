@@ -1151,6 +1151,71 @@ def get_device_capability(device_id: int = 0) -> Tuple[int, int]:
     return major, minor
 
 
+def _npugraph_ex_options() -> dict:
+    """Backend options shared by the npugraph_ex and torchair code paths.
+
+    force_eager
+        npugraph_ex only compiles the FX graph; the surrounding capture and
+        replay are owned by NPUGraphRunner, so the graph must execute eagerly
+        while the stream is in capture state.
+    inplace_pass
+        The reinplace pass makes gelu fall back to CPU, which inserts a
+        host-device copy and breaks graph capture.
+    clone_input / clone_output
+        NPUGraphRunner already owns the static input and output buffers, so the
+        extra clones are pure overhead.
+    """
+    return {
+        "force_eager": True,
+        "inplace_pass": False,
+        "clone_input": False,
+        "clone_output": False,
+    }
+
+
+def _get_npugraph_ex_backend():
+    """Build the npugraph_ex compile backend for NPU.
+
+    Prefers the standalone npugraph_ex package and falls back to the
+    equivalent torchair reduce-overhead mode when it is not installed.
+    """
+    try:
+        import npugraph_ex
+
+        # _process_kwargs_options lives in different modules across versions.
+        try:
+            from npugraph_ex.configs.compiler_config import _process_kwargs_options
+        except ImportError:
+            from npugraph_ex.configs.npugraphex_config import _process_kwargs_options
+    except ImportError:
+        return _get_torchair_aclgraph_backend()
+
+    torch.npu.set_compile_mode(jit_compile=False)
+    compiler_config = npugraph_ex.CompilerConfig()
+    _process_kwargs_options(compiler_config, {"options": _npugraph_ex_options()})
+    return npugraph_ex.get_npu_backend(compiler_config=compiler_config)
+
+
+def _get_torchair_aclgraph_backend():
+    """npugraph_ex equivalent built from the torchair bundled in torch_npu."""
+    try:
+        import torchair
+        from torchair.configs.compiler_config import CompilerConfig
+    except ImportError:
+        raise ImportError(
+            "NPU detected, but neither npugraph_ex nor torchair is installed. "
+            "Please install one of them for torch.compile support on NPU."
+        )
+
+    torch.npu.set_compile_mode(jit_compile=False)
+    compiler_config = CompilerConfig()
+    compiler_config.mode = "reduce-overhead"
+    compiler_config.debug.run_eagerly = True
+    # Mirrors inplace_pass=False above.
+    compiler_config.debug.aclgraph.disable_reinplace_inplaceable_ops_pass = True
+    return torchair.get_npu_backend(compiler_config=compiler_config)
+
+
 def get_compiler_backend(mode=None) -> str:
     # OOT platforms provide their own compile backend.
     if current_platform.is_out_of_tree():
@@ -1164,6 +1229,8 @@ def get_compiler_backend(mode=None) -> str:
         return "hpu_backend"
 
     if hasattr(torch, "npu") and torch.npu.is_available():
+        if mode == "npugraph_ex":
+            return _get_npugraph_ex_backend()
         try:
             import torchair
             import torchair.ge_concrete_graph.ge_converter.experimental.patch_for_hcom_allreduce  # noqa: F401
@@ -1175,9 +1242,6 @@ def get_compiler_backend(mode=None) -> str:
             )
         compiler_config = CompilerConfig()
         compiler_config.mode = "max-autotune"
-        if mode == "npugraph_ex":
-            compiler_config.mode = "reduce-overhead"
-            compiler_config.debug.run_eagerly = True
         npu_backend = torchair.get_npu_backend(compiler_config=compiler_config)
         return npu_backend
 
