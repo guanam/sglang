@@ -49,7 +49,6 @@ from sglang.srt.model_executor.runner.decode_cuda_graph_runner import (
     build_replay_fb_view,
 )
 from sglang.srt.utils import (
-    empty_context,
     get_bool_env_var,
     get_compiler_backend,
     is_npu,
@@ -86,7 +85,7 @@ def patch_model_npu(
         backend = get_compiler_backend("npugraph_ex")
         yield torch.compile(
             torch.no_grad()(model.forward),
-            fullgraph=True,
+            fullgraph=False,
             dynamic=False,
             backend=backend,
         )
@@ -169,19 +168,11 @@ class NPUGraphRunner(DecodeCudaGraphRunner):
         )
 
     def _capture_graph(self, graph, pool, stream, run_once_fn):
-        if self.enable_torch_compile:
-            skip_guard_context = torch.compiler.set_stance(skip_guard_eval_unsafe=True)
-        else:
-            skip_guard_context = empty_context()
-
-        with (
-            skip_guard_context,
-            torch.npu.graph(
-                graph,
-                pool=pool,
-                stream=stream,
-                auto_dispatch_capture=True,
-            ),
+        with torch.npu.graph(
+            graph,
+            pool=pool,
+            stream=stream,
+            auto_dispatch_capture=True,
         ):
             out = run_once_fn()
         return out
