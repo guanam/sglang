@@ -1,0 +1,17 @@
+[
+  {
+    "image": "baseline.png",
+    "source_log": "pr160_results/main_A_cf1_pr160/bench_r2.log",
+    "sha256": "43c7b629ace13a48182fcc18e9b4598b2f16ec70f48665c285e78e07abadc787"
+  },
+  {
+    "image": "npugraph_ex.png",
+    "source_log": "pr160_results/main_ex_cf2_pr160/bench_r2.log",
+    "sha256": "319f9415931967e47fab51512a1152dabcf38b246f15ee6d6233c48600dc713c"
+  },
+  {
+    "image": "statickernel.png",
+    "source_log": "pr160_results/main_static_cf3_pr160/bench_r2.log",
+    "sha256": "cd7a39f1690f8dd8afb55ce61b0a08643096512e590ed40980142a7c88c10e3b"
+  }
+]

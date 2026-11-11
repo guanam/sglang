@@ -1,0 +1,109 @@
+{
+  "rows": [
+    {
+      "route": "A",
+      "round": 1,
+      "requests": 160,
+      "throughput": 1032.549197187809,
+      "tpot_ms": 27.679150914226298
+    },
+    {
+      "route": "A",
+      "round": 2,
+      "requests": 160,
+      "throughput": 1024.0340405171776,
+      "tpot_ms": 27.93691995295853
+    },
+    {
+      "route": "ex",
+      "round": 1,
+      "requests": 160,
+      "throughput": 1030.490579449229,
+      "tpot_ms": 27.731962370487288
+    },
+    {
+      "route": "ex",
+      "round": 2,
+      "requests": 160,
+      "throughput": 1030.336426540851,
+      "tpot_ms": 27.7431096830675
+    },
+    {
+      "route": "static",
+      "round": 1,
+      "requests": 160,
+      "throughput": 1039.1998972023564,
+      "tpot_ms": 27.475365761071828
+    },
+    {
+      "route": "static",
+      "round": 2,
+      "requests": 160,
+      "throughput": 1040.4866242343885,
+      "tpot_ms": 27.440961829841495
+    }
+  ],
+  "comparisons": [
+    {
+      "route": "ex",
+      "round": 1,
+      "throughput_change_pct": -0.19937236348512855,
+      "tpot_change_pct": 0.1907986860747446
+    },
+    {
+      "route": "ex",
+      "round": 2,
+      "throughput_change_pct": 0.6154469260114315,
+      "tpot_change_pct": -0.6937424390998537
+    },
+    {
+      "route": "static",
+      "round": 1,
+      "throughput_change_pct": 0.6441049039271673,
+      "tpot_change_pct": -0.7362406230811414
+    },
+    {
+      "route": "static",
+      "round": 2,
+      "throughput_change_pct": 1.6066442194540453,
+      "tpot_change_pct": -1.7752784628804918
+    }
+  ],
+  "text_parity": [
+    {
+      "route": "ex",
+      "round": 1,
+      "compared": 160,
+      "matches": 160,
+      "same_input_lens": true,
+      "same_output_lens": true
+    },
+    {
+      "route": "ex",
+      "round": 2,
+      "compared": 160,
+      "matches": 160,
+      "same_input_lens": true,
+      "same_output_lens": true
+    },
+    {
+      "route": "static",
+      "round": 1,
+      "compared": 160,
+      "matches": 160,
+      "same_input_lens": true,
+      "same_output_lens": true
+    },
+    {
+      "route": "static",
+      "round": 2,
+      "compared": 160,
+      "matches": 160,
+      "same_input_lens": true,
+      "same_output_lens": true
+    }
+  ],
+  "independent_processes_per_route": 1,
+  "migration_cost_ns": 50000,
+  "profiler": false
+}
